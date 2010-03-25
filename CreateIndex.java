@@ -1,25 +1,30 @@
 import com.sleepycat.db.*;
 import java.io.*;
 
-public Class CreateIndex
+public class CreateIndex
 {
 	private static Database db;
 	public static void main(String[] args)
 	{
+		String dataFile = null;
+		String invertedTitleFile = null;
+		String invertedContributorFile = null;
+		String invertedTextFile = null;
+
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		try
 		{
 			System.out.print("Enter name of data file:");
-			String dataFile= in.readLine();
+			dataFile= in.readLine();
 
 			System.out.print("Enter name of inverted title file:");
-			String invertedTitleFile = in.readLine();
+			invertedTitleFile = in.readLine();
 
 			System.out.print("Enter name of inverted contributor file:");
-			String invertedContributorFile = in.readLine();
+			invertedContributorFile = in.readLine();
 
 			System.out.print("Enter name of inverted text file:");
-			String invertedTextFile = in.readLine();
+			invertedTextFile = in.readLine();
 		}
 		catch (IOException e)
 		{
@@ -28,9 +33,22 @@ public Class CreateIndex
 		}
 
 		DatabaseConfig dbConfig = new DatabaseConfig();
-		dbConfig.setType(Database.Type.BTREE);
+		dbConfig.setType(DatabaseType.BTREE);
 
-		CreateIndex.db = new Database("database", null, dbConfig);
+		try
+		{
+			CreateIndex.db = new Database("database", null, dbConfig);
+		}
+		catch (DatabaseException e)
+		{
+			System.out.println("Weird database exception." + e.getMessage());
+			System.exit(1);
+		}
+		catch (FileNotFoundException e)
+		{
+			System.out.println("Could not open database file." + e.getMessage());
+			System.exit(1);
+		}
 
 		try
 		{
@@ -39,7 +57,15 @@ public Class CreateIndex
 		catch (IOException e)
 		{
 			System.out.println("Could not create title index file." + e.getMessage());
-			CreateIndex.db.close();
+			try
+			{
+				CreateIndex.db.close();
+			}
+			catch (DatabaseException dbException)
+			{
+				System.out.println("Could not close database." + dbException.getMessage());
+			}
+			System.exit(1);
 		}
 	}
 
@@ -55,7 +81,8 @@ public Class CreateIndex
 		BufferedReader file = new BufferedReader(new FileReader(invertedTitleFile));
 
 		// Read through the entire file.
-		while (title = file.readLine())
+		title = file.readLine();
+		while (title != null)
 		{
 			documentId = file.readLine();
 
@@ -65,11 +92,20 @@ public Class CreateIndex
 			key.setData(title.getBytes());
 			key.setSize(title.length());
 
-			oprStatus = CreateIndex.db.put(null, key, data);
-			if (oprStatus != OperationStatus.SUCCESS)
+			try
 			{
-				throw new IOException("Invalid key/data pair in file.");
+				oprStatus = CreateIndex.db.put(null, key, data);
+				if (oprStatus != OperationStatus.SUCCESS)
+				{
+					throw new IOException("Invalid key/data pair in file.");
+				}
 			}
+			catch (DatabaseException e)
+			{
+				System.out.println("Could not add index entry." + e.getMessage());
+			}
+
+			title = file.readLine();
 		}
 	}
 }
