@@ -96,9 +96,7 @@ public class CreateIndex
 		title = file.readLine();
 		while (title != null)
 		{
-			System.out.println(title + "The keyword.");
 			documentId = file.readLine();
-			System.out.println(documentId + "The document id.");
 
 			// Fill in key and data pair.
 			data.setData(documentId.getBytes());
@@ -113,7 +111,6 @@ public class CreateIndex
 				{
 					throw new IOException("Invalid key/data pair in file.");
 				}
-				System.out.println("We have added " + oprStatus);
 			}
 			catch (DatabaseException e)
 			{
