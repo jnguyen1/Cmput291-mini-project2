@@ -34,6 +34,7 @@ public class CreateIndex
 
 		DatabaseConfig dbConfig = new DatabaseConfig();
 		dbConfig.setType(DatabaseType.BTREE);
+		dbConfig.setAllowCreate(true);
 
 		try
 		{
@@ -52,7 +53,7 @@ public class CreateIndex
 
 		try
 		{
-			CreateIndex.createTitleIndex(invertedTextFile);	
+			CreateIndex.createTitleIndex(invertedTitleFile);	
 		}
 		catch (IOException e)
 		{
@@ -67,13 +68,24 @@ public class CreateIndex
 			}
 			System.exit(1);
 		}
+
+		// Close the database after finishing all tasks.
+		try
+		{
+			CreateIndex.db.close();
+		}
+		catch (DatabaseException e)
+		{
+			// Just warn user but there's nothing we want to do here.
+			System.out.println("Could not close database.");
+		}
 	}
 
 	private static void createTitleIndex(String invertedTitleFile) throws IOException
 	{
 		OperationStatus oprStatus;
-		DatabaseEntry key = null;
-		DatabaseEntry data = null;
+		DatabaseEntry key = new DatabaseEntry();
+		DatabaseEntry data = new DatabaseEntry();
 		String title = null;
 		String documentId = null;
 
@@ -84,7 +96,9 @@ public class CreateIndex
 		title = file.readLine();
 		while (title != null)
 		{
+			System.out.println(title + "The keyword.");
 			documentId = file.readLine();
+			System.out.println(documentId + "The document id.");
 
 			// Fill in key and data pair.
 			data.setData(documentId.getBytes());
@@ -99,6 +113,7 @@ public class CreateIndex
 				{
 					throw new IOException("Invalid key/data pair in file.");
 				}
+				System.out.println("We have added " + oprStatus);
 			}
 			catch (DatabaseException e)
 			{
