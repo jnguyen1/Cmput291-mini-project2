@@ -3,6 +3,7 @@ import java.io.*;
 
 public class CreateIndex
 {
+	private static String helpMessage = "usage:java CreateIndex DATAFILE TITLEFILE USERFILE TEXTFILE";
 	public static void main(String[] args)
 	{
 		String dataFile = null;
@@ -10,38 +11,27 @@ public class CreateIndex
 		String invertedContributorFile = null;
 		String invertedTextFile = null;
 
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		try
+		// Require 4 files as arguments.
+		if (args.length != 4)
 		{
-			System.out.print("Enter name of data file:");
-			dataFile= in.readLine();
-
-			System.out.print("Enter name of inverted title file:");
-			invertedTitleFile = in.readLine();
-
-			System.out.print("Enter name of inverted contributor file:");
-			invertedContributorFile = in.readLine();
-
-			System.out.print("Enter name of inverted text file:");
-			invertedTextFile = in.readLine();
-		}
-		catch (IOException e)
-		{
-			System.out.println("Could not get one more more required filenames." + e.getMessage());
+			System.out.println(helpMessage);
 			System.exit(1);
 		}
+		else
+		{
+			dataFile = args[0];
+			invertedTitleFile = args[1];
+			invertedContributorFile = args[2];
+			invertedTextFile = args[3];
+		}
 
-		try
-		{
-			CreateIndex.createTitleIndex(invertedTitleFile);	
-		}
-		catch (IOException e)
-		{
-			System.out.println("Could not create title index file." + e.getMessage());
-		}
+		// Create the BTree index files (title, contributor, text).
+		CreateIndex.createBtreeIndex(invertedTitleFile, "ti.idx");	
+		CreateIndex.createBtreeIndex(invertedContributorFile, "co.idx");	
+		CreateIndex.createBtreeIndex(invertedTextFile, "tx.idx");	
 	}
 
-	private static void createTitleIndex(String invertedTitleFile) throws IOException
+	private static void createBtreeIndex(String inputFile, String indexFile)
 	{
 		Database db = null;
 		DatabaseConfig dbConfig;
@@ -62,49 +52,57 @@ public class CreateIndex
 		// Open database file.
 		try
 		{
-			db = new Database("ti.idx", null, dbConfig);
+			db = new Database(indexFile, null, dbConfig);
 		}
 		catch (DatabaseException e)
 		{
 			System.out.println("Weird database exception." + e.getMessage());
-			System.exit(1);
+			return;
 		}
 		catch (FileNotFoundException e)
 		{
 			// Shouldn't be a problem because a new file will be created.
 			System.out.println("Could not open database file." + e.getMessage());
-			System.exit(1);
+			return;
 		}
 
 		// Open inverted title file for reading.
-		file = new BufferedReader(new FileReader(invertedTitleFile));
-
-		// Read through the entire file.
-		title = file.readLine();
-		while (title != null)
+		try
 		{
-			documentId = file.readLine();
+			file = new BufferedReader(new FileReader(inputFile));
 
-			// Fill in key and data pair.
-			data.setData(documentId.getBytes());
-			data.setSize(documentId.length());
-			key.setData(title.getBytes());
-			key.setSize(title.length());
-
-			try
-			{
-				oprStatus = db.put(null, key, data);
-				if (oprStatus != OperationStatus.SUCCESS)
-				{
-					throw new IOException("Invalid key/data pair in file.");
-				}
-			}
-			catch (DatabaseException e)
-			{
-				System.out.println("Could not add index entry." + e.getMessage());
-			}
-
+			// Read through the entire file.
 			title = file.readLine();
+			while (title != null)
+			{
+				documentId = file.readLine();
+
+				// Fill in key and data pair.
+				data.setData(documentId.getBytes());
+				data.setSize(documentId.length());
+				key.setData(title.getBytes());
+				key.setSize(title.length());
+
+				try
+				{
+					oprStatus = db.put(null, key, data);
+					if (oprStatus != OperationStatus.SUCCESS)
+					{
+						throw new IOException("Invalid key/data pair in file.");
+					}
+				}
+				catch (DatabaseException e)
+				{
+					System.out.println("Could not add index entry." + e.getMessage());
+				}
+
+				title = file.readLine();
+			}
+		}
+		catch (IOException e)
+		{
+			System.out.println("Could not open file " + inputFile + ". " + e.getMessage());
+			return;
 		}
 
 		// Close database after it's been populated.
