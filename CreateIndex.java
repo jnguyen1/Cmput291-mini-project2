@@ -26,12 +26,13 @@ public class CreateIndex
 		}
 
 		// Create the BTree index files (title, contributor, text).
-		CreateIndex.createBtreeIndex(invertedTitleFile, "ti.idx");	
-		CreateIndex.createBtreeIndex(invertedContributorFile, "co.idx");	
-		CreateIndex.createBtreeIndex(invertedTextFile, "tx.idx");	
+		CreateIndex.createIndex(invertedTitleFile, "ti.idx", DatabaseType.BTREE);	
+		CreateIndex.createIndex(invertedContributorFile, "co.idx", DatabaseType.BTREE);	
+		CreateIndex.createIndex(invertedTextFile, "tx.idx", DatabaseType.BTREE);	
+		CreateIndex.createIndex(dataFile, "doc.idx", DatabaseType.HASH);	
 	}
 
-	private static void createBtreeIndex(String inputFile, String indexFile)
+	private static void createIndex(String inputFile, String indexFile, DatabaseType type)
 	{
 		Database db = null;
 		DatabaseConfig dbConfig;
@@ -46,7 +47,7 @@ public class CreateIndex
 
 		// Configure the database to be btree and to allow creation of file.
 		dbConfig = new DatabaseConfig();
-		dbConfig.setType(DatabaseType.BTREE);
+		dbConfig.setType(type);
 		dbConfig.setAllowCreate(true);
 
 		// Open database file.
