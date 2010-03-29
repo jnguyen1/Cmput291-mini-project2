@@ -7,6 +7,7 @@ public class CreateIndex
 	public static void main(String[] args)
 	{
 		String dataFile = null;
+		String invertedDataFile = "doc.txt";
 		String invertedTitleFile = null;
 		String invertedContributorFile = null;
 		String invertedTextFile = null;
@@ -25,13 +26,73 @@ public class CreateIndex
 			invertedTextFile = args[3];
 		}
 
+		CreateIndex.prepareDataFile(dataFile, invertedDataFile);
+
 		// Create the BTree index files (title, contributor, text).
 		CreateIndex.createIndex(invertedTitleFile, "ti.idx", DatabaseType.BTREE);	
 		CreateIndex.createIndex(invertedContributorFile, "co.idx", DatabaseType.BTREE);	
 		CreateIndex.createIndex(invertedTextFile, "tx.idx", DatabaseType.BTREE);	
-		CreateIndex.createIndex(dataFile, "doc.idx", DatabaseType.HASH);	
+		CreateIndex.createIndex(invertedDataFile, "doc.idx", DatabaseType.HASH);	
+		
+		// Remove the invertedDataFile.
+		(new File(invertedDataFile)).delete();
 	}
 
+	/**
+	 * Function:
+	 * Converts the data file into a file that has similar format as the inverted files.
+	 *
+	 * Param:
+	 * inputFile - the name of the data file.
+	 * outputFile - the name of the inverted file formatted data file.
+	 *
+	 * Return:
+	 * None
+	 *
+	 * jnguyen1 - 2010-03-28
+	 */
+	private static void prepareDataFile(String inputFile, String outputFile)
+	{
+		// Call awk script to do the formatting.
+		String oneliner = "awk -f prepareDataFile.awk " + inputFile;
+
+		try{
+			Process p = Runtime.getRuntime().exec(oneliner);
+
+			// Read the output from the process and pipe it to the output.
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
+
+			String line;
+			while ((line = in.readLine()) != null) 
+			{
+				out.write(line);
+				// Insert the missing newline.
+				out.write('\n');
+			}
+			out.close();
+		}
+		catch(IOException e)
+		{
+			System.out.println("Could not run process to convert data file.");
+			System.exit(1);
+		}
+	}
+
+	/**
+	 * Function:
+	 * Create the database using the inverted file as input.
+	 *
+	 * Param:
+	 * inputFile - the inverted file.
+	 * indexFile - the database file.
+	 * type - the type of database.
+	 *
+	 * Return:
+	 * None.
+	 *
+	 * jnguyen1 - 2010-03-26
+	 */
 	private static void createIndex(String inputFile, String indexFile, DatabaseType type)
 	{
 		Database db = null;
@@ -72,7 +133,8 @@ public class CreateIndex
 		{
 			file = new BufferedReader(new FileReader(inputFile));
 
-			// Read through the entire file.
+			// This loop reads two lines from file every iteration.
+			// It is assumed that the file follows the format "key\ndata\n"
 			title = file.readLine();
 			while (title != null)
 			{
