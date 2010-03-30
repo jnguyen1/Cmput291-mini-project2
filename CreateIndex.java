@@ -70,6 +70,8 @@ public class CreateIndex
 				// Insert the missing newline.
 				out.write('\n');
 			}
+
+			in.close();
 			out.close();
 		}
 		catch(IOException e)
@@ -161,6 +163,8 @@ public class CreateIndex
 
 				title = file.readLine();
 			}
+
+			file.close();
 		}
 		catch (IOException e)
 		{
