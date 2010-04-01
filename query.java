@@ -7,9 +7,9 @@ import java.lang.Object;
 
 	
 	public class query {
-	static Vector<scannedWords> text= new Vector<scannedWords>();
-	static Vector<scannedWords> con= new Vector<scannedWords>();
-	static Vector<scannedWords> title= new Vector<scannedWords>();
+	static Vector<String> text= new Vector<String>();
+	static Vector<String> con= new Vector<String>();
+	static Vector<String> title= new Vector<String>();
 	static Vector<result> resultSet = new Vector<result>();
 	static int searches = 0;
 
@@ -19,7 +19,7 @@ import java.lang.Object;
         
 	@SuppressWarnings("null")
 	public static void main(String args[]){
-		String input = readEntry("Entery Query:");
+		String input = readEntry("Enter Query:");
 		String[] tokens = input.split(":");	
 
 		//fixes the problem of extra colons not related to a search
@@ -53,14 +53,14 @@ import java.lang.Object;
 		//unless its the last string, then the whole thing is added
 		for (int i = 0; i < len; i++){
 			if( (tokens[i].substring((tokens[i].length() - 2), tokens[i].length())).compareTo("tx") == 0 ){
-				scannedWords temp = new scannedWords();
+				String temp = "";
 				if((i+1) < (len -1)){
-				temp.sting = (tokens[i+1].substring(0, (tokens[i+1]).length()-3));
+				temp = tokens[i+1].substring(0, (tokens[i+1]).length()-3);
 				text.add(temp);
 				searches++;
 				}
 				if((i + 1) == (len -1)){
-					temp.sting = (tokens[i+1]);
+					temp = tokens[i+1];
 					text.add(temp);
 					searches++;
 			}
@@ -69,14 +69,14 @@ import java.lang.Object;
 			
 		for (int i = 0; i < len; i++){
 			if( (tokens[i].substring((tokens[i].length() - 2), tokens[i].length())).compareTo("ti") == 0 ){
-				scannedWords temp = new scannedWords();
+				String temp = "";
 				if((i+1) < (len -1)){
-				temp.sting = (tokens[i+1].substring(0, (tokens[i+1]).length()-3));
+				temp = tokens[i+1].substring(0, (tokens[i+1]).length()-3);
 				title.add(temp);
 				searches++;
 				}
 				if((i + 1) == (len -1)){
-					temp.sting = (tokens[i+1]);
+					temp = tokens[i+1];
 					title.add(temp);
 					searches++;
 			}
@@ -87,14 +87,14 @@ import java.lang.Object;
 		
 		for (int i = 0; i < len; i++){
 			if( (tokens[i].substring((tokens[i].length() - 2), tokens[i].length())).compareTo("co") == 0 ){
-				scannedWords temp = new scannedWords();
+				String temp = "";
 				if((i+1) < (len -1)){
-				temp.sting = (tokens[i+1].substring(0, (tokens[i+1]).length()-3));
+				temp = tokens[i+1].substring(0, (tokens[i+1]).length()-3);
 				con.add(temp);
 				searches++;
 				}
 				if((i + 1) == (len -1)){
-					temp.sting = (tokens[i+1]);
+					temp = tokens[i+1];
 					con.add(temp);
 					searches++;
 			}
@@ -122,7 +122,7 @@ import java.lang.Object;
 	    //get out values of text to be searched
 	    
                 for(int size = (text.size()-1); size >= 0; size--){
-                  String temp = (text.get(size)).sting;
+                  String temp = text.get(size);
                   OperationStatus oprStatus;
                 
                   //wildcard case
@@ -213,7 +213,7 @@ import java.lang.Object;
             
 	    //get out values of title to be searched
             for(int size = (title.size()-1); size >= 0; size--){        	 
-        	String temp = (title.get(size)).sting;
+        	String temp = (title.get(size));
         	OperationStatus oprStatus;
         	//wildcard case
              if(temp.substring((temp.length() -1), temp.length()).equals("%")){
@@ -304,7 +304,7 @@ import java.lang.Object;
           
 	    //get out values of con to be searched
 	    for(int size = (con.size()-1); size >= 0; size--){
-                String temp = (con.get(size)).sting;
+                String temp = (con.get(size));
             	OperationStatus oprStatus;
             	//wildcard case
             if(temp.substring((temp.length() -1), temp.length()).equals("%")){
