@@ -55,304 +55,23 @@ import java.lang.Object;
                 searches += split("tx", text, tokens);
                 searches += split("ti", title, tokens);
                 searches += split("co", con, tokens);
+//database searches	
+                searchDB("tx.idx", text);
+                searchDB("ti.idx", title);
+                searchDB("co.idx", con); 		
 
-//database searches		
-	try {
-          //DatabaseConfig dbConfig = new DatabaseConfig();
-		dbConfig.setErrorStream(System.err);
-		dbConfig.setErrorPrefix("MyDbs");
-			
-			
-	    //databases
-		Database tx_db = new Database("tx.idx", null, dbConfig);
-		Database co_db = new Database("co.idx", null, dbConfig);
-	        Database ti_db = new Database("ti.idx", null, dbConfig);
-      
-		
-	    //create a cursor
-                Cursor tx_cur = tx_db.openCursor(null, null);
-                Cursor co_cur = co_db.openCursor(null, null);    
-                Cursor ti_cur = ti_db.openCursor(null, null);    
-            
-	    //get out values of text to be searched
-	    
-                for(int size = (text.size()-1); size >= 0; size--){
-                  String temp = text.get(size);
-                  OperationStatus oprStatus;
-                
-                  //wildcard case
-                  if(temp.substring((temp.length() -1), temp.length()).equals("%")){
-                    temp = temp.substring(0,(temp.length()-1));   
-                    key = new DatabaseEntry();
-                    key.setData(temp.getBytes());
-              
-                    key.setSize(temp.length());
-                    
-                    data = new DatabaseEntry();
-                    oprStatus = tx_cur.getFirst(key, data, LockMode.DEFAULT);
-                    while(oprStatus == OperationStatus.SUCCESS)
-                  {
-                	  String result = new String(data.getData());
-                          String word = new String(key.getData());;
-                          String[] dreamTheater = result.split(",");
-                          int o = 0;
-                          while(o< (dreamTheater.length))
-                          {
-                        	  if(word.startsWith(temp))
-                                 {
-                            result = dreamTheater[o];
-                            boolean m = false;
-                	  //see if the result is in the result set already
-                            for(int t= (resultSet.size()-1); t>=0; t--){
-                            if(result.equals(resultSet.get(t).sting)){
-                        	  resultSet.get(t).hits++;
-                        	  m = true;
-                        	  }
-                            }
-                            if(m == false){
-
-                		  //if not add the result
-                            	result results = new result();
-                                        results.sting = result;
-                                        results.hits = 1;
-                                        resultSet.add(results);
-                          }
-                        	  	}
-                          o++;
-                          }
-                          data = new DatabaseEntry();
-                          oprStatus = tx_cur.getNext(key, data, LockMode.DEFAULT); 
-                  }
-                  }
-
-
-                  else{
-	    	//cursor search, works for multiple results;
-                  key.setData(temp.getBytes());
-                  key.setSize(temp.length());
-                  oprStatus = tx_cur.getSearchKey(key, data, LockMode.DEFAULT);
-                  while(oprStatus == OperationStatus.SUCCESS)
-                  {
-                	  String result = new String(data.getData());
-                          String[] dreamTheater = result.split(",");
-                          int o = 0;
-                          while(o< (dreamTheater.length))
-                          {
-                            result = dreamTheater[o];
-                	  boolean m = false;
-                	  //see if the result is in the result set already
-                	  for(int t= (resultSet.size()-1); t>=0; t--){
-                            if(result.equals(resultSet.get(t).sting)){
-                        	  resultSet.get(t).hits++;
-                        	  m = true;
-                          }
-                	  }
-                	  
-                	  if(m == false){
-
-                		  //if not add the result
-	    		   		result results = new result();
-                                        results.sting = result;
-                                        results.hits = 1;
-                                        resultSet.add(results);
-                          }
-                          o++;
-                          }
-                          oprStatus = tx_cur.getNextDup(key, data, LockMode.DEFAULT); 
-                      
-                  }
-                }
-                }
-                tx_db.close();
-               
-            
-	    //get out values of title to be searched
-            for(int size = (title.size()-1); size >= 0; size--){        	 
-        	String temp = (title.get(size));
-        	OperationStatus oprStatus;
-        	//wildcard case
-             if(temp.substring((temp.length() -1), temp.length()).equals("%")){
-               temp = temp.substring(0,(temp.length()-1));
-
-               key = new DatabaseEntry();
-               key.setData(temp.getBytes());
-              
-              key.setSize(temp.length());
-
-               data = new DatabaseEntry();
-   
-              oprStatus = ti_cur.getFirst(key, data, LockMode.DEFAULT);
-              
-              while(oprStatus == OperationStatus.SUCCESS)
-            {
-          	  String result = new String(data.getData());
-                  String word = new String(key.getData());
-                    String[] dreamTheater = result.split(",");
-                    int o = 0;
-                    while(o< (dreamTheater.length))
-                    {
-                  	  if(word.startsWith(temp))
-                  	  {                     	  
-                      result = dreamTheater[o];
-                      boolean m = false;
-          	  //see if the result is in the result set already
-                      for(int t= (resultSet.size()-1); t>=0; t--){
-                      if(result.equals(resultSet.get(t).sting)){
-                  	  resultSet.get(t).hits++;
-                  	  m = true;
-                  	  }
-                      }
-                      if(m == false){
-          		  //if not add the result
-                      	result results = new result();
-                                  results.sting = result;
-                                  results.hits = 1;
-                                  resultSet.add(results);
-                    }
-                  	  	}
-                    o++;
-                    }
-                    data = new DatabaseEntry();
-                    
-                    oprStatus = ti_cur.getNext(key, data, LockMode.DEFAULT); 
-            }
-            }
-
-            else{
-            	key.setData(temp.getBytes());
-                key.setSize(temp.length());
-        	//cursor search, works for multiple results
-        	oprStatus = ti_cur.getSearchKey(key, data, LockMode.DEFAULT);
-        	while(oprStatus == OperationStatus.SUCCESS)
-	    	{
-        		String result = new String(data.getData());
-                        String[] dreamTheater = result.split(",");
-                          int o = 0;
-                          while(o< (dreamTheater.length))
-                          {
-
-                         result = dreamTheater[o];
-                        boolean m = false;
-	    		//see if the result is in the result set already 
-	    		for(int t= (resultSet.size()-1); t>=0; t--){
-                          if(result.equals(resultSet.get(t).sting)){
-	    				resultSet.get(t).hits++;
-	    				m = true;
-	    				}
-	    		}
-	    		if(m == false){
-	    	    		//if not add the result
-	    	    		result results = new result();
-	    	    		results.sting = result;
-	    	    		results.hits = 1;
-                                resultSet.add(results);
-                                
-	    			}
-                        o++;
-                          }
-	    		oprStatus = ti_cur.getNextDup(key, data, LockMode.DEFAULT);
-	    	}
-	    }
-            }
-
-            ti_db.close();
-          
-	    //get out values of con to be searched
-	    for(int size = (con.size()-1); size >= 0; size--){
-                String temp = (con.get(size));
-            	OperationStatus oprStatus;
-            	//wildcard case
-            if(temp.substring((temp.length() -1), temp.length()).equals("%")){
-               temp = temp.substring(0,(temp.length()-1));
-                key = new DatabaseEntry();
-                  key.setData(temp.getBytes());
-                  key.setSize(temp.length());
-                  data = new DatabaseEntry();
-                  oprStatus = co_cur.getFirst(key, data, LockMode.DEFAULT);
-                  while(oprStatus == OperationStatus.SUCCESS)
-                {
-              	  String result = new String(data.getData());
-                  String word = new String(key.getData());
-                        String[] dreamTheater = result.split(",");
-                        int o = 0;
-                        while(o< (dreamTheater.length))
-                        {
-                      	  if(word.startsWith(temp))
-                      	  {                     	  
-                          result = dreamTheater[o];
-                          boolean m = false;
-              	  //see if the result is in the result set already
-                          for(int t= (resultSet.size()-1); t>=0; t--){
-                          if(result.equals(resultSet.get(t).sting)){
-                      	  resultSet.get(t).hits++;
-                      	  m = true;
-                      	  }
-                          }
-                          if(m == false){
-              		  //if not add the result
-                          	result results = new result();
-                                      results.sting = result;
-                                      results.hits = 1;
-                                      resultSet.add(results);
-                        }
-                      	  	}
-                        o++;
-                        }
-                        data = new DatabaseEntry();
-                        oprStatus = co_cur.getNext(key, data, LockMode.DEFAULT); 
-                }
-                }
-                //non wild card case
-                else{
-                  key.setData(temp.getBytes());
-                key.setSize(temp.length());
-	    	//cursor search, works for multiple results
-	    	oprStatus = co_cur.getSearchKey(key, data, LockMode.DEFAULT);
-	    	while(oprStatus == OperationStatus.SUCCESS)
-	    	{
-
-                  String result = new String(data.getData());
-                  String[] dreamTheater = result.split(",");
-                  int o = 0;
-                      
-                  while(o< (dreamTheater.length))
-                  {
-                    result = dreamTheater[o];
-                  boolean m = false;
-                  //see if the result is in the result set already 
-                  for(int t= (resultSet.size()-1); t>=0; t--){
-                    if(result.equals(resultSet.get(t).sting)){
-                      resultSet.get(t).hits++;
-                      m = true;
-                    }
-                  }
-                  
-                  if(m == false){
-                    //if not add the result
-                    result results = new result();
-                    results.sting = result;
-                    results.hits = 1;
-                    resultSet.add(results);
-                  }
-                  o++;
-                  }
-                  oprStatus = co_cur.getNextDup(key, data, LockMode.DEFAULT);
-	    	}	
-                }	
-	    } 
-	    co_db.close();
-           
+                try {
 	//see results that have hits that matches searches
         boolean found = false;
-        	if (resultSet.size() > 0){
-        		for(int f =(resultSet.size() -1); f>=0; f--){
-        			if(resultSet.get(f).hits >= searches){
-        				found = true;
-        				//from this get the the id and the title of matching pages
-        				findMatching(resultSet.get(f).sting);
-        			}     
-        		}
-  
+        if (resultSet.size() > 0){
+          for(int f =(resultSet.size() -1); f>=0; f--){
+            if(resultSet.get(f).hits >= searches){
+              found = true;
+              //from this get the the id and the title of matching pages
+              findMatching(resultSet.get(f).sting);
+            }     
+          }
+          
                 
         }
                 if (found == false)
@@ -360,7 +79,7 @@ import java.lang.Object;
 
                 
 	} catch (Exception ex) 
-          {System.out.println(ex.getMessage());}
+                      {System.out.println(ex.getMessage());}
 }
 	
 
@@ -399,7 +118,8 @@ import java.lang.Object;
 
     ti_db.close(); 
   } catch (Exception ex) 
-    { ex.getMessage();}
+    { ex.getMessage();
+      System.out.println(ex.getMessage());}
 }
 	
 	
@@ -416,18 +136,15 @@ static String readEntry(String prompt) {
     } 
     return buffer.toString().trim(); 
   } catch (IOException e) { 
-    return ""; 
+    return "";
   } 
 		
 }
 
-
-
-
 static int split(String compare, Vector<String> dest, String[] tokens){
   int len = tokens.length;
   int searches = 0;
-  for (int i = 0; i < len; i++){
+  for (int i = 0; i <(len-1); i++){    
     if( (tokens[i].substring((tokens[i].length() - 2), tokens[i].length())).compareTo(compare) == 0 ){
       String temp = "";
       if((i+1) < (len -1)){
@@ -450,5 +167,117 @@ static int split(String compare, Vector<String> dest, String[] tokens){
 
 
 
+
+
+
+static void searchDB(String DBfile, Vector<String> vec){
+  try{
+  dbConfig.setErrorStream(System.err);
+  dbConfig.setErrorPrefix("MyDbs");
+  Database db = new Database(DBfile, null, dbConfig); 
+  Cursor cur = db.openCursor(null, null);
+  DatabaseEntry key = null;
+  DatabaseEntry data = null;
+  OperationStatus oprStatus;
+  for(int size = (vec.size()-1); size >= 0; size--){
+    String temp = vec.get(size);               
+    //wildcard case
+    if(temp.endsWith("%")){
+      if (temp.length() == 1){
+        System.out.println("Warning, just '%' entered");
+        db.close();
+          return;
+      }
+      
+      temp = temp.substring(0,(temp.length()-1));
+      
+      key = new DatabaseEntry();
+      key.setData(temp.getBytes());        
+      key.setSize(temp.length());
+                    
+      data = new DatabaseEntry();
+      oprStatus = cur.getFirst(key, data, LockMode.DEFAULT);
+      while(oprStatus == OperationStatus.SUCCESS)
+      {
+        String result = new String(data.getData());
+        String word = new String(key.getData());;
+        String[] dreamTheater = result.split(",");
+        int o = 0;
+        while(o< (dreamTheater.length))
+        {
+          if(word.startsWith(temp))
+          {
+            result = dreamTheater[o];
+            boolean m = false;
+            //see if the result is in the result set already
+            for(int t= (resultSet.size()-1); t>=0; t--){
+              if(result.equals(resultSet.get(t).sting)){
+                resultSet.get(t).hits++;
+                m = true;
+              }
+            }
+            if(m == false){             
+              //if not add the result
+              result results = new result();
+              results.sting = result;
+              results.hits = 1;
+              resultSet.add(results);
+            }
+          }
+          o++;
+        }
+        data = new DatabaseEntry();
+        oprStatus = cur.getNext(key, data, LockMode.DEFAULT); 
+      }
+    }
+
+
+    else{
+      //cursor search, works for multiple results;
+      key = new DatabaseEntry();
+      key.setData(temp.getBytes());
+      key.setSize(temp.length());
+      data = new DatabaseEntry();
+      oprStatus = cur.getSearchKey(key, data, LockMode.DEFAULT);
+      while(oprStatus == OperationStatus.SUCCESS)
+      {
+        String result = new String(data.getData());
+        String[] dreamTheater = result.split(",");
+        int o = 0;
+        while(o< (dreamTheater.length))
+        {
+          result = dreamTheater[o];
+          boolean m = false;
+          //see if the result is in the result set already
+          for(int t= (resultSet.size()-1); t>=0; t--){
+            if(result.equals(resultSet.get(t).sting)){
+              resultSet.get(t).hits++;
+              m = true;
+            }
+          }
+                	  
+          if(m == false){
+            
+            //if not add the result
+            result results = new result();
+            results.sting = result;
+            results.hits = 1;
+            resultSet.add(results);
+          }
+          o++;
+        }
+        oprStatus = cur.getNextDup(key, data, LockMode.DEFAULT);                       
+      }
+    }
+  }
+  db.close();
+  } catch (DatabaseException ex) 
+    {System.out.println(ex.getMessage());}
+  catch (IOException ex) 
+    {System.out.println(ex.getMessage());}
 }
 
+
+
+  
+}
