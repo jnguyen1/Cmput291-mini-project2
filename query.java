@@ -51,55 +51,10 @@ import java.lang.Object;
 		//split on :
 		//read the last 2 characters of the previous string. adds all but the last 2 characters of the next string
 		//unless its the last string, then the whole thing is added
-		for (int i = 0; i < len; i++){
-			if( (tokens[i].substring((tokens[i].length() - 2), tokens[i].length())).compareTo("tx") == 0 ){
-				String temp = "";
-				if((i+1) < (len -1)){
-				temp = tokens[i+1].substring(0, (tokens[i+1]).length()-3);
-				text.add(temp);
-				searches++;
-				}
-				if((i + 1) == (len -1)){
-					temp = tokens[i+1];
-					text.add(temp);
-					searches++;
-			}
-		}
-		}
-			
-		for (int i = 0; i < len; i++){
-			if( (tokens[i].substring((tokens[i].length() - 2), tokens[i].length())).compareTo("ti") == 0 ){
-				String temp = "";
-				if((i+1) < (len -1)){
-				temp = tokens[i+1].substring(0, (tokens[i+1]).length()-3);
-				title.add(temp);
-				searches++;
-				}
-				if((i + 1) == (len -1)){
-					temp = tokens[i+1];
-					title.add(temp);
-					searches++;
-			}
-		}
-		}
-			
- 
-		
-		for (int i = 0; i < len; i++){
-			if( (tokens[i].substring((tokens[i].length() - 2), tokens[i].length())).compareTo("co") == 0 ){
-				String temp = "";
-				if((i+1) < (len -1)){
-				temp = tokens[i+1].substring(0, (tokens[i+1]).length()-3);
-				con.add(temp);
-				searches++;
-				}
-				if((i + 1) == (len -1)){
-					temp = tokens[i+1];
-					con.add(temp);
-					searches++;
-			}
-		}
-		}
+
+                searches += split("tx", text, tokens);
+                searches += split("ti", title, tokens);
+                searches += split("co", con, tokens);
 
 //database searches		
 	try {
@@ -465,4 +420,35 @@ static String readEntry(String prompt) {
   } 
 		
 }
+
+
+
+
+static int split(String compare, Vector<String> dest, String[] tokens){
+  int len = tokens.length;
+  int searches = 0;
+  for (int i = 0; i < len; i++){
+    if( (tokens[i].substring((tokens[i].length() - 2), tokens[i].length())).compareTo(compare) == 0 ){
+      String temp = "";
+      if((i+1) < (len -1)){
+        temp = tokens[i+1].substring(0, (tokens[i+1]).length()-3);
+        dest.add(temp);
+        searches++;
+      }
+      if((i + 1) == (len -1)){
+        temp = tokens[i+1];
+        dest.add(temp);
+        searches++;
+      }
+    }
+  }
+  return searches;
 }
+
+
+
+
+
+
+}
+
