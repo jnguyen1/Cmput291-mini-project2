@@ -9,12 +9,14 @@ public class query
 	private static Vector<String> text = new Vector<String>();
 	private static Vector<String> con = new Vector<String>();
 	private static Vector<String> title = new Vector<String>();
-	private static Vector<result> resultSet = new Vector<result>();
+	private static Set<String> resultSet = new HashSet<String>();
 	private static int searches = 0;
 
 	private static DatabaseConfig dbConfig = new DatabaseConfig();
 	private static DatabaseEntry key = new DatabaseEntry();
 	private static DatabaseEntry data = new DatabaseEntry();
+
+	private static boolean firstKeyword = true;
 
 	public static void main(String args[])
 	{
@@ -70,17 +72,13 @@ public class query
 			boolean found = false;
 			if (resultSet.size() > 0)
 			{
-				for(int f =(resultSet.size() -1); f>=0; f--)
+				Iterator<String> iter = resultSet.iterator();
+				while (iter.hasNext())
 				{
-					if(resultSet.get(f).hits >= searches)
-					{
-						found = true;
-						//from this get the the id and the title of matching pages
-						findMatching(resultSet.get(f).sting);
-					}     
+					findMatching(iter.next());
 				}
 			}
-			if (found == false)
+			else
 			{
 				System.out.println("No results");
 			}
@@ -219,6 +217,7 @@ public class query
 			DatabaseEntry key = null;
 			DatabaseEntry data = null;
 			OperationStatus oprStatus;
+
 			for(int size = (vec.size()-1); size >= 0; size--)
 			{
 				String temp = vec.get(size);               
@@ -231,6 +230,7 @@ public class query
 						return;
 					}
 
+					Set<String> set = new HashSet<String>();
 					temp = temp.substring(0,(temp.length()-1));
 
 					key = new DatabaseEntry();
@@ -243,43 +243,34 @@ public class query
 					{
 						String result = new String(data.getData());
 						String word = new String(key.getData());;
-						String[] dreamTheater = result.split(",");
-						int o = 0;
-						while(o< (dreamTheater.length))
-						{
-							if(word.startsWith(temp))
-							{
-								result = dreamTheater[o];
-								boolean m = false;
-								//see if the result is in the result set already
-								for(int t= (resultSet.size()-1); t>=0; t--)
-								{
-									if(result.equals(resultSet.get(t).sting))
-									{
-										resultSet.get(t).hits++;
-										m = true;
-									}
-								}
 
-								if(m == false)
-								{
-									//if not add the result
-									result results = new result();
-									results.sting = result;
-									results.hits = 1;
-									resultSet.add(results);
-								}
-							}
-							o++;
+						// Because we are traversing the db with a cursor, will change.
+						// We check if the next key starts with our keyword search.
+						if(word.startsWith(temp))
+						{
+							Vector<String> dreamTheater = new Vector<String>(Arrays.asList(result.split(",")));
+							set.addAll(dreamTheater);
 						}
 						key = new DatabaseEntry();
 						data = new DatabaseEntry();
 						oprStatus = cur.getNext(key, data, LockMode.DEFAULT); 
 					}
+
+					if (firstKeyword)
+					{
+						resultSet = set;
+						firstKeyword = false;
+					}
+					else
+					{
+						resultSet = setIntersection(resultSet, set);
+					}
 				}
 
 				else
 				{
+					Set<String> set = new HashSet<String>();
+
 					//cursor search, works for multiple results;
 					key = new DatabaseEntry();
 					key.setData(temp.getBytes());
@@ -289,32 +280,19 @@ public class query
 					while(oprStatus == OperationStatus.SUCCESS)
 					{
 						String result = new String(data.getData());
-						String[] dreamTheater = result.split(",");
-						int o = 0;
-						while(o< (dreamTheater.length))
-						{
-							result = dreamTheater[o];
-							boolean m = false;
-							//see if the result is in the result set already
-							for(int t= (resultSet.size()-1); t>=0; t--)
-							{
-								if(result.equals(resultSet.get(t).sting))
-								{
-									resultSet.get(t).hits++;
-									m = true;
-								}
-							}
+						Vector<String> dreamTheater = new Vector<String>(Arrays.asList(result.split(",")));
+						set = new HashSet<String>(dreamTheater);
 
-							if(m == false)
-							{
-								//if not add the result
-								result results = new result();
-								results.sting = result;
-								results.hits = 1;
-								resultSet.add(results);
-							}
-							o++;
+						if (firstKeyword)
+						{
+							resultSet = set;
+							firstKeyword = false;
 						}
+						else
+						{
+							resultSet = setIntersection(resultSet, set);
+						}
+
 						oprStatus = cur.getNextDup(key, data, LockMode.DEFAULT);                       
 					}
 				}
@@ -329,5 +307,32 @@ public class query
 		{
 			System.out.println(ex.getMessage());
 		}
+	}
+
+	/**
+	 * Function:
+	 * Get the intersection of two sets.
+	 *
+	 * Param:
+	 * set1 - first set of strings. This is the bigger one that we are matching against.
+	 * set2 - second set of strings.
+	 *
+	 * Return:
+	 * A set of the elements that are in both sets.
+	 */
+	private static Set<String> setIntersection(Set<String> set1, Set<String> set2)
+	{
+		Set<String> resultSet = new HashSet<String>();
+		Iterator<String> iter = set2.iterator();
+		while(iter.hasNext())
+		{
+			String temp = iter.next();
+			if (set1.contains(temp))
+			{
+				resultSet.add(temp);
+			}
+		}
+
+		return resultSet;
 	}
 }
