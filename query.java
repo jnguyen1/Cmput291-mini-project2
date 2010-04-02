@@ -90,6 +90,16 @@ public class query
 	}
 
 
+	/**
+	 * Function:
+	 * Print the title of the matching doc id from the searches.
+	 *
+	 * Param:
+	 * match - the doc id of the search result.
+	 *
+	 * Return:
+	 * None.
+	 */
 	static void findMatching(String match)
 	{
 		// find the text where the id is the same as match,  
@@ -133,6 +143,16 @@ public class query
 		}
 	}
 
+	/**
+	 * Function:
+	 * Read a line from stdin.
+	 *
+	 * Param:
+	 * prompt - the prompt string to print.
+	 *
+	 * Return:
+	 * The line read from user.
+	 */
 	static String readEntry(String prompt)
 	{
 		try
